@@ -17,7 +17,7 @@ start(_StartType, _StartArgs) ->
     lager:info("Starting transfer-service: ~p~n", [node()]),
 
     start_cowboy(),
-    %% database:init_database(),
+    database:init_database(),
 
     Res = erlbank_flex_transfer_sup:start_link(),
     lager:info("Started transfer feed: ~p~n", [node()]),
