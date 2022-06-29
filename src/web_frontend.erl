@@ -1,54 +1,69 @@
+
 -module(web_frontend).
+-include("data.hrl").
 -export([init/2]).
 
-
-success() ->
-    << "
-      <p> Account with account number ~p was opened successfully </p> ~n
-      <p> It could take several minutes until the account is ready for transfers </p>
-      <a href=\"/\"> Back </a>
+-spec transfer_success() -> binary().
+transfer_success() ->
+            << "
+      <p> Transfer with id ~p successfully created </p> ~n
+               <a href=\"/\"> Back </a>
     " >>.
 
 
-form() ->
-    << "
-<h3> Open Account </h3>
-<form method=\"post\" action=\"/accounts/open\">
-  <label for=\"accounts_firstname\"> Firstname </label>
-  <input type=\"text\" id=\"accounts_firstname\" name=\"accounts_firstname\" />
+transfer_form() ->
+                    << "
+<h3> Create transfer </h3>
+                       <form method=\"post\" action=\"/transfers/create\">
+  <label for=\"transfers_from\"> From (account number) </label>
+  <input type=\"text\" id=\"transfers_from\" name=\"transfers_from\" />
 
-  <label for=\"accounts_secondname\"> Secondname </label>
-  <input type=\"text\" id=\"accounts_secondname\" name=\"accounts_secondname\" />
+  <label for=\"transfers_to\"> To (account number) </label>
+  <input type=\"text\" id=\"transfers_to\" name=\"transfers_to\" />
 
-  <input type=\"submit\" value=\"Open account\" />
+  <label for=\"transfers_amount\"> Amount </label>
+  <input type=\"text\" id=\"transfers_amount\" name=\"transfers_amount\" />
+
+  <input type=\"submit\" value=\"Create transfer\" />
 </form>" >>.
 
+-spec bin_to_int(binary()) -> integer().
+bin_to_int(B) ->
+    erlang:list_to_integer(binary:bin_to_list(B)).
 
+-spec transfer_error() -> binary().
+transfer_error() ->
+    << "
+      <p> An error occured: ~p </p> ~n
+       <a href=\"/\"> Back </a>
+    " >>.
 
-init(Req, add) ->
+index() ->
+    io_lib:format("~s", [transfer_form()]).
 
-    lager:info("Creating new account"),
+%% /transfers/create
+init(Req, create_transfer) ->
 
     {ok, KeyValuesL, _} = cowboy_req:read_urlencoded_body(Req),
 
     KeyValues = maps:from_list(KeyValuesL),
-    Firstname = maps:get(<<"accounts_firstname">>, KeyValues),
-    Secondname = maps:get(<<"accounts_secondname">>, KeyValues),
+    SenderAccountNumber =  bin_to_int(maps:get(<<"transfers_from">>, KeyValues)),
+    ReceiverAccountNumber = bin_to_int(maps:get(<<"transfers_to">>, KeyValues)),
+    Amount = bin_to_int(maps:get(<<"transfers_amount">>, KeyValues)),
 
-    % dispatch
-    AccountNumber = 1,
-    Body = io_lib:format(success(), [AccountNumber]),
-
+    Body = case business_logic:transfer(SenderAccountNumber, ReceiverAccountNumber, Amount) of
+               {ok, TxId} ->
+                   io_lib:format(transfer_success(), [TxId]);
+               {error, Err} ->
+                   io_lib:format(transfer_error(), [Err])
+           end,
     Req2 = cowboy_req:reply(200, #{<<"content-type">> => <<"text/html">>}, Body, Req),
-
-    lager:info("Created account with account number ~p", [AccountNumber]),
-
     {ok, Req2, []};
 
+%% /index
 init(Req0, index) ->
-    ResponseBody = form(),
     Req = cowboy_req:reply(200,
                            #{<<"content-type">> => <<"text/html">>},
-                           ResponseBody,
+                           index(),
                            Req0),
     {ok, Req, []}.

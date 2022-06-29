@@ -4,7 +4,7 @@
 %% @end
 %%%-------------------------------------------------------------------
 
--module(erlbank_flex_accounts_sup).
+-module(erlbank_flex_transfer_sup).
 
 -behaviour(supervisor).
 
