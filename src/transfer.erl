@@ -21,7 +21,7 @@ handle_cast({account_service,Count,create_account,{account,Id,_Name,_Surname,Amo
   end.
 
 handle_info(hallo, #state{pid = Pid, count = Count} = State) ->
-  gen_server:cast(Pid, {register, self(), Count}),
+  gen_server:cast(Pid, {register, self(), account_service, Count}),
   {noreply, State}.
 
 handle_call(_Get,_From,_State) ->{}.
