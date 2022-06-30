@@ -2,7 +2,7 @@
 -include("events.hrl").
 -include("data.hrl").
 -behaviour(gen_server).
--export([start_link/1, broadcast_new_transfer/1, send_events/2, handle_cast/2]).
+-export([start_link/1, broadcast_new_transfer/1, send_events/2, handle_cast/2, init/1]).
 
 start_link(Start) ->
     gen_server:start_link({local, transfer_feed}, ?MODULE, Start, [{debug, [trace]}]).
@@ -27,11 +27,11 @@ handle_cast({register, Pid, Counter}, {RegisteredProcessesState, Count}) ->
 
     {noreply, {NewRegisteredProcessesState, Count}};
 
-handle_cast(Transfer, {RegisteredProcessesState, Count}) -> 
+handle_cast(#transfer{id = Id, timestamp = Timestamp, from_acc_nr = From, to_acc_nr = To, amount = Amount}, {RegisteredProcessesState, Count}) -> 
     NewCount = Count + 1,
     RegisteredProcessesAsList = sets:to_list(RegisteredProcessesState),
     lists:foreach(fun (Pid) -> 
-        gen_server:cast(Pid, {transfer_service, NewCount, Transfer}) end, 
+        gen_server:cast(Pid, {transfer_service, NewCount, {transferEvent, Id, Timestamp, From, To, Amount}}) end, 
         RegisteredProcessesAsList
     ),
     {noreply, {RegisteredProcessesState, NewCount}}.

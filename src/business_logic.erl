@@ -53,6 +53,7 @@ transfer(SenderAccountNumber, ReceiverAccountNumber, Amount) ->
                         NewAccSender = AccSender#account{amount = (AccSenderAmount - Amount)},
                         NewAccReceiver = AccReceiver#account{amount = (AccReceiverAmount + Amount)},
                         database:put_transfer(Tx),
+                        transfer_feed:broadcast_new_transfer(Tx),
                         database:put_account(NewAccSender),
                         database:put_account(NewAccReceiver),
                         {ok, TxId};
