@@ -6,7 +6,7 @@ case "$1" in
     deploy)
         echo mycookie > $HOME/.erlang.cookie
         chmod 400 $HOME/.erlang.cookie
-        ./_build/default/rel/erlbank_flex_accounts/bin/erlbank_flex_accounts foreground
+        ./_build/default/rel/erlbank_flex_transfer/bin/erlbank_flex_transfer foreground
         ;;
     test)
         rebar3 eunit
@@ -48,7 +48,7 @@ case "$1" in
 
         echo mycookie > $HOME/.erlang.cookie
         chmod 400 $HOME/.erlang.cookie
-        ./_build/default/rel/erlbank_flex_accounts/bin/erlbank_flex_accounts foreground
+        ./_build/default/rel/erlbank_flex_transfer/bin/erlbank_flex_transfer foreground
         ;;
     *)
         sh -c $@
