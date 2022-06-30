@@ -1,23 +1,31 @@
 -module(transfer).
--export([start/1, handle_cast/2]).
+-export([start/1, handle_cast/2, init/1, handle_call/3, event1/0, handle_info/2]).
 
 -behavior(gen_server).
 
-start(Start) ->
-  gen_server:start(?MODULE, Start, [{debug, [trace]}]).
+-record(state, {pid :: number(), count :: number()}).
 
--record(register, {register :: register,service :: pid(), id :: number()}).
--record(account, {id :: number(), name :: string(), surname :: string(), amount :: number()}).
--record(accountEvent, {service :: account_service, 
-count :: number(), 
-create_account :: create_account,
-account :: #account{}}).
+start(RegistryPid) ->
+  gen_server:start(?MODULE, #state{pid = RegistryPid, count = 0}, [{debug, [trace]}]).
 
-init(Start) ->
-  {ok, Start}. 
+init(State) ->
+  timer:send_interval(1000, hallo),
+  {ok, State}. 
 
--spec handle_cast(#accountEvent{}, number()) -> {}.
+handle_cast({account_service,Count,create_account,{account,Id,_Name,_Surname,Amount}}, 
+#state{pid = Pid, count = CurrentCount} = State) -> 
+  if
+    Count == CurrentCount + 1 -> business_logic:make_account(Id, Amount),
+      {noreply, #state{pid = Pid , count = Count}};
+    true -> {noreply, State}
+  end.
 
-handle_cast(#accountEvent{count = Count, account = #account{id = ID, amount = Amount}}, N) -> {} .
+handle_info(hallo, #state{pid = Pid, count = Count} = State) ->
+  gen_server:cast(Pid, {register, self(), Count}),
+  {noreply, State}.
 
+handle_call(_Get,_From,_State) ->{}.
+
+
+event1() -> {account_service,1,create_account,{account,1,kevin,tchouente,200}}.
 

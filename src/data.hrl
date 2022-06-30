@@ -4,7 +4,6 @@
 
 -record(account,
     {account_number :: account_number(),
-     count :: unique_id(),
      amount :: money()}).
 -record(transfer, 
     {id :: unique_id(), 
