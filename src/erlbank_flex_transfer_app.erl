@@ -28,6 +28,7 @@ start(_StartType, _StartArgs) ->
 
     start_cowboy(),
     database:init_database(),
+    events:init_events(),
 
     Res = erlbank_flex_transfer_sup:start_link(),
     transfer_feed:start_link(dontCare),
