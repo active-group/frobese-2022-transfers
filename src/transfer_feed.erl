@@ -34,6 +34,7 @@ handle_cast(#transfer{id = Id, timestamp = Timestamp, from_acc_nr = From, to_acc
         gen_server:cast(Pid, {transfer_service, NewCount, {transferEvent, Id, Timestamp, From, To, Amount}}) end, 
         RegisteredProcessesAsList
     ),
+    events:put_event({transferEvent, Id, Timestamp, From, To, Amount}),
     {noreply, {RegisteredProcessesState, NewCount}}.
 
 init(_) ->
