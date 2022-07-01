@@ -20,7 +20,7 @@ handle_cast({hallo, Pid, _Counter}, {RegisteredProcessesState, Count}) ->
     gen_server:cast(Pid, {selber_hallo}),
     {noreply, {RegisteredProcessesState, Count}};
 
-handle_cast({register, Pid, Counter}, {RegisteredProcessesState, Count}) ->
+handle_cast({register, Pid, transfer_service, Counter}, {RegisteredProcessesState, Count}) ->
     NewRegisteredProcessesState = sets:add_element(Pid, RegisteredProcessesState),
     AllEvents = events:get_events_from(Counter + 1),
     send_events(AllEvents, Pid),
